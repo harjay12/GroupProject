@@ -1,3 +1,0 @@
-DiskC /home/harjay/Desktop/ProjectB/diskc.img 0 63 555 1000
-ROM resource/bios.bin
-VideoROM resource/vgabios.bin
