@@ -8,8 +8,7 @@ KSEG	equ	0x1000	;kernel goes into memory at 0x10000
 KSIZE	equ	10	;kernel is at most 10 sectors (and probably less)
 KSTART	equ	3	;kernel lives at sector 3
 
-	;boot loader starts at 0 in segment 0x7c00
-	org 0h
+	;boot loader starts at 0 in segment 0x7c00 org 0h
 
 	;let's put the kernel at KSEG:0
 	;set up the segment registers
