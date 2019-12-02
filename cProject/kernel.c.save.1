@@ -1,0 +1,161 @@
+
+//kernel.c
+void readFile(char* name, char* buffer, int* sectorsRead);
+void printString(char*);
+void readString(char*);
+void readSector(char*, int);
+void handleInterrupt21(int, int, int, int);
+
+void main(){
+/*
+	char line[80];
+	
+	readString(line);
+	printString(line);
+
+	char buffer[512];
+	readSector(buffer,30);
+	printString(buffer);
+
+*/
+	char line[80];
+	char buffer[13312];
+	int sectorsRead;
+	int i = 0;
+	int j = 5;
+while(1){
+	syscall(0,"Shell> ");
+	syscall(1,line);
+
+	if(line[0] =='t' && line[1]=='y' && line[2]=='p' && line[3]=='e' && line[4]==' '){
+		syscall(1,line);
+	}
+	if(line[0] =='m' && line[1]=='e' && line[2]=='s' && line[3]=='s' && line[4]=='a' && line[5]=='g'){
+		syscall(3, "messag", buffer,&sectorsRead);
+	}  
+	if(readSector > 0){
+	syscall(0,buffer);
+	}
+	else{
+	syscall(0,"file not found\r\n");
+	}
+	
+}
+}
+
+void readFile(char* buffer, int* sector, char* dir){
+	int j,s = 0;
+	char* name;
+	char[512];
+	*sectorsRead = 0;
+	readSector(dir,2);
+	for(j = 0; j< 512; j=j+32){
+		if(name[0] == dir[j+0] && name[1] == dir[j+1] && name[2] == dir[j+2] && name[3] == dir[j+3] && name[4] == dir[j+4] && name[5] == dir[j+5] && name[6] == dir[j+6]){
+			for (y =0;dir[y] !=0; y+=32){
+			readSector(buffer,dir[y]);
+			*sectorsRead = *sectorsRead +1;
+			buffer = buffer + 512;
+			}
+		}
+	}
+
+
+
+}
+
+
+void handleInterrupt21(int ax, int bx, int cx, int dx){
+
+	if(ax==0){
+	printString(bx);
+		}
+
+	else if(ax == 1){
+	readString(bx);
+		}
+	
+	else if(ax == 2){
+	interrupt(0x10,0xe*0x100+'\n',0x0,0x0,0x0);
+	readSector(bx,cx);
+		}
+
+	else{
+
+	readString("Error ",'\0');
+
+	} 
+}
+
+void readSector(char* buffer, int sector){
+
+	int AH = 2;
+	int AL = 1;
+
+	int CH = 0;
+	int CL = sector+1;
+	int DH = 0;
+	int DL = 0x80;
+
+	int AX = AH * 0x100 + AL;
+	int CX = CH * 0x100 + CL;
+	int DX = DH * 0x100 + DL; 
+
+	interrupt(0x13,AX,buffer,CX,DX);
+
+} 
+
+void readString(char* line){
+
+	char start = 0x0;
+	int j = 0;
+
+	while(start != 0xd){
+
+	start = interrupt(0x16,0x0,0x0,0x0,0x0);
+
+	*(line + j) = start;
+
+	if (start == 0xd && j > 0x0) {
+
+	interrupt(0x10,0xe*0x100+'\n',0x0,0x0,0x0);
+	interrupt(0x10,0xe*0x100+start,0x0,0x0,0x0);
+     	j++;
+	
+	}
+
+	else if (start == '\b' && j > 0x0) {
+     		j--;
+	interrupt(0x10,0xe*0x100+'\b',0x0,0x0,0x0);
+	interrupt(0x10,0xe*0x100+' ',0x0,0x0,0x0);
+	interrupt(0x10,0xe*0x100+'\b',0x0,0x0,0x0);
+		}
+	else if(start != '\b'){
+
+    	interrupt(0x10,0xe*0x100+start,0x0,0x0,0x0);
+     	j++;
+
+		}
+
+	
+	}	
+
+  	*(line + j) = 0x0;
+	
+}
+
+void printString(char* letters){
+
+	int count = 0;
+
+	while(*(letters + count)!= '\0'){
+	
+	char al = *(letters + count);
+	char ah = 0xe;
+	int ax = ah * 256 + al;
+	
+	interrupt(0x10, ax, 0x0, 0x0, 0x0);
+	count++;
+
+	}
+
+}
